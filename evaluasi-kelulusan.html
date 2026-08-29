@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Blog</title>
+    <title>Simple Blog — Kelola Artikel</title>
     <link rel="stylesheet" href="./evaluasi-kelulusan.css">
 </head>
 
@@ -12,39 +12,40 @@
     <section>
 
         <div class="header-banner">
-            <h1>Simple Blog</h1>
+            <h1>📝 Simple Blog</h1>
             <button id="btn-tema">🌙 Mode Gelap</button>
         </div>
 
-        <p id="notifikasi" class="notif-pesan"></p>
-          
-        <div class="kolom-center">
-            <div class="blog-section" id="blog-section">
-                <h2>📝 Kelola Artikel (Blog)</h2>
-
-                <form id="article-form" class="article-form">
-                    <input type="hidden" id="article-id" value="" />
-                    <div class="form-group">
-                        <input type="text" id="article-title" class="article-title" placeholder="Judul Artikel..." required />
-                    </div>
-                    <div class="form-group">
-                        <textarea id="article-body" class="article-body" rows="3" placeholder="Isi Artikel..." required></textarea>
-                    </div>
-                    <div id="btn-article" class="btn-article-group">
-                        <button type="submit" id="btn-submit-article" class="btn-submit-article">Simpan Artikel</button>
-                        <button type="button" id="btn-cancel-article" class="btn-cancel-article" style="display: none;">Batal Edit</button>
-                    </div>
-                </form>
-
-                <div class="div-cari-article">
-                    <input type="text" id="input-cari-article" class="input-cari-article" placeholder="🔍 Cari judul artikel...">
+        <div class="article-form-box">
+            <h2 id="form-heading">➕ Tambah Artikel Baru</h2>
+            <form id="article-form">
+                <input type="hidden" id="article-id" value="" />
+                
+                <div class="form-group">
+                    <input type="text" id="article-title" placeholder="Judul Artikel..." required />
                 </div>
 
-                <p id="notif-article" class="notif-pesan"></p>
-
-                <div id="article-list-container" class="card-container">
-                    <!-- Artikel dimuat lewat JS -->
+                <div class="form-group">
+                    <textarea id="article-body" rows="4" placeholder="Tuliskan isi artikel di sini..." required></textarea>
                 </div>
+
+                <div class="btn-group">
+                    <button type="submit" id="btn-submit-article" class="btn-primary">Simpan Artikel</button>
+                    <button type="button" id="btn-cancel-article" class="btn-secondary" style="display: none;">Batal Edit</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="input-cari-article" placeholder="🔍 Cari artikel berdasarkan judul..." />
+        </div>
+
+        <p id="notif-article" class="notif-pesan"></p>
+
+        <div class="blog-list-section">
+            <h2>📜 Daftar Artikel</h2>
+            <div id="article-list-container" class="card-container">
+                <!-- Artikel dimuat via JS -->
             </div>
         </div>
     </section>

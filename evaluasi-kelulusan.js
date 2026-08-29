@@ -1,26 +1,26 @@
 (function () {
     "use strict";
 
-    // API URLs
+    // API URL
     const ARTICLE_API = "https://jsonplaceholder.typicode.com/posts";
 
-    // ELEMEN DOM - BLOG ARTIKEL
-    const blogSection = document.querySelector("#blog-section");
+    let articlesData = [];
+    let isEditingArticle = false;
+    let editArticleId = null;
+    let temaSaatIni = localStorage.getItem("temaBlog") || "terang";
+
+    // Elemen DOM
+    const btnTema = document.querySelector("#btn-tema");
     const articleForm = document.querySelector("#article-form");
     const articleIdInput = document.querySelector("#article-id");
     const articleTitleInput = document.querySelector("#article-title");
     const articleBodyInput = document.querySelector("#article-body");
+    const formHeading = document.querySelector("#form-heading");
     const btnSubmitArticle = document.querySelector("#btn-submit-article");
     const btnCancelArticle = document.querySelector("#btn-cancel-article");
     const inputCariArticle = document.querySelector("#input-cari-article");
     const notifArticle = document.querySelector("#notif-article");
     const articleListContainer = document.querySelector("#article-list-container");
-
-    let articlesData = [];
-    let isEditingArticle = false;
-    let editArticleId = null;
-
-    let temaSaatIni = localStorage.getItem("temaSantri") || "terang";
 
     function terapkanTema(tema) {
         if (tema === "gelap") {
@@ -30,7 +30,7 @@
             document.body.classList.remove("dark-mode");
             btnTema.textContent = "🌙 Mode Gelap";
         }
-        localStorage.setItem("temaSantri", tema);
+        localStorage.setItem("temaBlog", tema);
         temaSaatIni = tema;
     }
 
@@ -39,16 +39,20 @@
     });
 
     async function muatDataArtikel() {
-        notifArticle.textContent = "Loading articles...";
+        notifArticle.textContent = "⏳ Loading articles...";
+        notifArticle.style.display = "block";
+
         try {
             const res = await fetch(`${ARTICLE_API}?_limit=6`);
-            if (!res.ok) throw new Error("Gagal mengambil artikel.");
+            if (!res.ok) throw new Error("Gagal mengambil data dari server.");
 
             articlesData = await res.json();
             notifArticle.textContent = "";
+            notifArticle.style.display = "none";
             renderDaftarArtikel(articlesData);
         } catch (error) {
-            notifArticle.textContent = "Gagal mengambil data artikel. Silakan coba lagi.";
+            notifArticle.textContent = "⚠️ Gagal mengambil data artikel. Silakan coba lagi.";
+            notifArticle.style.display = "block";
         }
     }
 
@@ -56,27 +60,29 @@
         articleListContainer.innerHTML = "";
 
         if (list.length === 0) {
-            articleListContainer.innerHTML = "<p>Belum ada artikel.</p>";
+            articleListContainer.innerHTML = "<p class='empty-state'>Belum ada artikel.</p>";
             return;
         }
 
         list.forEach((art) => {
-            const card = document.createElement("div");
-            card.className = "user-card article-card-item";
+            const card = document.createElement("article");
+            card.className = "article-card";
 
             card.innerHTML = `
-                <div class="user-card-header">
-                    <span class="user-name">#${art.id} ${escapeHTML(art.title)}</span>
+                <div class="article-card-header">
+                    <span class="article-id">#${art.id}</span>
+                    <h3 class="article-title">${escapeHTML(art.title)}</h3>
                 </div>
-                <p class="user-email" style="margin-top: 6px;">${escapeHTML(art.body)}</p>
+                <p class="article-body">${escapeHTML(art.body)}</p>
                 <div class="article-action-buttons">
-                    <button class="btn-action-art btn-edit-art">✏️ Edit</button>
-                    <button class="btn-action-art btn-delete-art">🗑️ Delete</button>
+                    <button class="btn-action btn-edit">✏️ Edit</button>
+                    <button class="btn-action btn-delete">🗑️ Delete</button>
                 </div>
             `;
 
-            card.querySelector(".btn-edit-art").addEventListener("click", () => setupEditArtikel(art.id));
-            card.querySelector(".btn-delete-art").addEventListener("click", () => hapusArtikel(art.id));
+            // Event Tombol Edit & Delete
+            card.querySelector(".btn-edit").addEventListener("click", () => setupEditArtikel(art.id));
+            card.querySelector(".btn-delete").addEventListener("click", () => hapusArtikel(art.id));
 
             articleListContainer.appendChild(card);
         });
@@ -93,7 +99,7 @@
                 body: JSON.stringify({ title, body, userId: 1 })
             });
 
-            if (!res.ok) throw new Error("Gagal menyimpan.");
+            if (!res.ok) throw new Error("Gagal menyimpan artikel.");
 
             const newId = articlesData.length > 0 ? Math.max(...articlesData.map(a => a.id)) + 1 : 101;
             articlesData.unshift({ id: newId, title, body });
@@ -101,7 +107,7 @@
             resetFormArtikel();
             filterArtikel();
         } catch (error) {
-            alert("Gagal menambahkan artikel.");
+            alert("Error: " + error.message);
         } finally {
             btnSubmitArticle.disabled = false;
             btnSubmitArticle.textContent = "Simpan Artikel";
@@ -114,14 +120,16 @@
 
         isEditingArticle = true;
         editArticleId = id;
+
         articleIdInput.value = target.id;
         articleTitleInput.value = target.title;
         articleBodyInput.value = target.body;
 
+        formHeading.textContent = `✏️ Edit Artikel #${target.id}`;
         btnSubmitArticle.textContent = "Update Artikel";
         btnCancelArticle.style.display = "inline-block";
 
-        blogSection.scrollIntoView({ behavior: "smooth" });
+        window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     async function updateArtikel(id, title, body) {
@@ -155,6 +163,8 @@
 
         try {
             await fetch(`${ARTICLE_API}/${id}`, { method: "DELETE" });
+            
+            // Hapus dari array lokal
             articlesData = articlesData.filter((a) => a.id !== id);
             filterArtikel();
         } catch (error) {
@@ -178,6 +188,7 @@
 
     btnCancelArticle.addEventListener("click", resetFormArtikel);
 
+    // Filter Search Real-time (Bonus)
     inputCariArticle.addEventListener("input", filterArtikel);
 
     function filterArtikel() {
@@ -192,6 +203,7 @@
         isEditingArticle = false;
         editArticleId = null;
         articleForm.reset();
+        formHeading.textContent = "➕ Tambah Artikel Baru";
         btnSubmitArticle.textContent = "Simpan Artikel";
         btnCancelArticle.style.display = "none";
     }
